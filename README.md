@@ -29,7 +29,7 @@ Here are a few things you can do with Time.HTML:
 If you’d like, you can tweak the HTML or CSS to customize colors, fonts, or layout.
 
 # Online
-1. Just head to [www.](https://hypersplash.github.io/Time.HTML/)
+1. Just head to [hypersplash.github.io/Time.HTML](https://hypersplash.github.io/Time.HTML/)
 ---
 
 ## 💡 Features
