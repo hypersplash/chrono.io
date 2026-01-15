@@ -7,12 +7,12 @@
 
 # What’s this even for?
 
-Well, you could just look at your taskbar clock… but where’s the fun in that?  
-Here are a few things you can do with Time.HTML:
+Well, you could just look at your taskbar clock or look at your phone… but where’s the fun in that?  
+Here are a few things you can do with Chrono.io:
 
-- 🖥️ **Display Time on Another Screen** — Perfect for dashboards, Raspberry Pi displays, or smart mirrors.  
-- ⏰ **Analog Clock Setup** — Use it to check and align your analog clocks precisely.  
-- 🎨 **Just for Fun** — Because sometimes, having a pretty clock on your screen feels oddly satisfying.  
+- 🖥️ **Display Time on Another Screen** - Perfect for dashboards, Raspberry Pi displays, or smart mirrors.  
+- ⏰ **Analog Clock Setup** - Use it to check and align your analog clocks precisely.  
+- 🎨 **Just for Fun** - Because sometimes, having a pretty clock on your screen feels oddly satisfying.  
 
 ---
 
