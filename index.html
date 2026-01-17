@@ -184,9 +184,9 @@
 
     <script>
         // ============================================
-        // DOM REFERENCES
+        // CONSTANTS
         // ============================================
-        const elements = {
+        const DOM = {
             digital: document.getElementById('digital'),
             analog: document.getElementById('analog'),
             toggle: document.getElementById('toggle'),
@@ -200,208 +200,239 @@
                 second: document.getElementById('second')
             },
             markers: document.getElementById('markers'),
-            clockNumbers: document.getElementById('clockNumbers')
+            clockNumbers: document.getElementById('clockNumbers'),
+            topRightButtons: document.querySelector('.top-right-buttons')
         };
 
-        // ============================================
-        // STATE
-        // ============================================
-        const state = {
+        const STATE = {
             isDigital: true,
             isGliding: false,
             showNumbers: false,
             is24Hour: true,
             buttonsHidden: false,
-            animationFrame: null
+            animationFrame: null,
+            tickInterval: null
         };
 
         // ============================================
-        // INITIALIZATION
+        // CORE LOGIC
         // ============================================
-        function init() {
-            generateMarkers();
-            generateNumbers();
-            attachEventListeners();
-            updateClock();
-            
-            // Start tick mode interval (updates every second when not gliding)
-            setInterval(() => {
-                if (!state.isGliding) {
-                    updateClock();
-                }
-            }, 1000);
-        }
 
-        // Generate 60 markers around clock face
-        function generateMarkers() {
-            for (let i = 0; i < 60; i++) {
-                const marker = document.createElement('div');
-                marker.className = i % 5 === 0 ? 'marker hour-marker' : 'marker minute-marker';
-                marker.style.transform = `rotate(${i * 6}deg)`;
-                elements.markers.appendChild(marker);
-            }
-        }
-
-        // Generate 12 numbers positioned around clock face using polar coordinates
-        function generateNumbers() {
-            const RADIUS = 150;
-            
-            for (let i = 1; i <= 12; i++) {
-                const num = document.createElement('div');
-                num.className = 'number';
-                
-                // Convert clock position to angle (12 o'clock = -90°, 3 o'clock = 0°, etc.)
-                const angle = (i * 30 - 90) * Math.PI / 180;
-                const x = Math.cos(angle) * RADIUS;
-                const y = Math.sin(angle) * RADIUS;
-                
-                num.style.transform = `translate(${x}px, ${y}px)`;
-                num.textContent = i;
-                
-                elements.clockNumbers.appendChild(num);
-            }
-        }
-
-        // ============================================
-        // EVENT HANDLERS
-        // ============================================
-        function attachEventListeners() {
-            elements.toggle.addEventListener('click', toggleClockMode);
-            elements.format.addEventListener('click', toggleTimeFormat);
-            elements.mode.addEventListener('click', toggleGlideMode);
-            elements.numbers.addEventListener('click', toggleNumbers);
-            elements.hide.addEventListener('click', toggleButtonVisibility);
-        }
-
-        function toggleClockMode() {
-            state.isDigital = !state.isDigital;
-            
-            if (state.isDigital) {
-                elements.digital.style.display = 'block';
-                elements.analog.style.display = 'none';
-                elements.format.style.display = 'block';
-                elements.mode.style.display = 'none';
-                elements.numbers.style.display = 'none';
-                elements.toggle.textContent = 'ANALOG';
-            } else {
-                elements.digital.style.display = 'none';
-                elements.analog.style.display = 'block';
-                elements.format.style.display = 'none';
-                elements.mode.style.display = 'block';
-                elements.numbers.style.display = 'block';
-                elements.toggle.textContent = 'DIGITAL';
-            }
-        }
-
-        function toggleTimeFormat() {
-            state.is24Hour = !state.is24Hour;
-            elements.format.textContent = state.is24Hour ? '12H' : '24H';
-            updateClock();
-        }
-
-        function toggleGlideMode() {
-            state.isGliding = !state.isGliding;
-            elements.mode.textContent = state.isGliding ? 'TICK' : 'GLIDE';
-            
-            if (state.isGliding) {
-                cancelAnimationFrame(state.animationFrame);
-                animate();
-            }
-        }
-
-        function toggleNumbers() {
-            state.showNumbers = !state.showNumbers;
-            const nums = document.querySelectorAll('.number');
-            
-            nums.forEach(n => n.classList.toggle('show', state.showNumbers));
-            elements.numbers.textContent = state.showNumbers ? 'MARKERS' : 'NUMBERS';
-        }
-
-        function toggleButtonVisibility() {
-            state.buttonsHidden = !state.buttonsHidden;
-            
-            if (state.buttonsHidden) {
-                elements.toggle.style.display = 'none';
-                elements.format.style.display = 'none';
-                elements.mode.style.display = 'none';
-                elements.numbers.style.display = 'none';
-            } else {
-                elements.toggle.style.display = 'block';
-                
-                // Only show mode-specific buttons based on current mode
-                if (state.isDigital) {
-                    elements.format.style.display = 'block';
-                } else {
-                    elements.mode.style.display = 'block';
-                    elements.numbers.style.display = 'block';
-                }
-            }
-        }
-
-        // ============================================
-        // CLOCK UPDATE LOGIC
-        // ============================================
+        /**
+         * Updates the clock display (both analog and digital).
+         * This function is called on every animation frame (in glide mode) or every second (in tick mode).
+         */
         function updateClock() {
             const now = new Date();
             const time = {
                 hours: now.getHours(),
                 minutes: now.getMinutes(),
                 seconds: now.getSeconds(),
-                milliseconds: state.isGliding ? now.getMilliseconds() : 0
+                milliseconds: STATE.isGliding ? now.getMilliseconds() : 0
             };
 
             updateDigitalClock(time);
             updateAnalogClock(time);
         }
 
+        /**
+         * Updates the digital clock face with the current time.
+         */
         function updateDigitalClock({ hours, minutes, seconds }) {
             const pad = n => n.toString().padStart(2, '0');
             let displayHours = hours;
             let suffix = '';
-            
-            if (!state.is24Hour) {
+
+            if (!STATE.is24Hour) {
                 suffix = hours >= 12 ? ' PM' : ' AM';
-                displayHours = hours % 12 || 12;
+                displayHours = hours % 12 || 12; // Use 12 for 0 (midnight)
             }
-            
-            elements.digital.textContent = `${pad(displayHours)}:${pad(minutes)}:${pad(seconds)}${suffix}`;
+
+            DOM.digital.textContent = `${pad(displayHours)}:${pad(minutes)}:${pad(seconds)}${suffix}`;
         }
 
+        /**
+         * Updates the analog clock hands based on the current time.
+         * In "glide" mode, it uses milliseconds for smooth, continuous movement.
+         */
         function updateAnalogClock({ hours, minutes, seconds, milliseconds }) {
-            // The gliding logic calculates fractional values for seconds, minutes, and hours.
-            // This allows for smooth, continuous movement of the hands rather than discrete ticks.
-            // The calculations are as follows:
-            // - Total seconds = current seconds + (milliseconds / 1000)
-            // - Total minutes = current minutes + (total seconds / 60)
-            // - Total hours   = (current hour % 12) + (total minutes / 60)
-            // Each total is then multiplied by its corresponding degrees-per-unit value.
+            // Calculate fractional values for smooth hand movement.
+            // - Total seconds: current seconds + (milliseconds / 1000)
+            // - Total minutes: current minutes + (total seconds / 60)
+            // - Total hours:   (current hour % 12) + (total minutes / 60)
             const secondsWithMs = seconds + milliseconds / 1000;
             const minutesWithSeconds = minutes + secondsWithMs / 60;
             const hoursWithMinutes = (hours % 12) + minutesWithSeconds / 60;
 
-            // Calculate rotation angles (360° / units = degrees per unit)
+            // Rotation degrees for each hand (e.g., 360° / 60s = 6° per second).
             const angles = {
-                second: secondsWithMs * 6,      // 360° / 60 seconds
-                minute: minutesWithSeconds * 6,  // 360° / 60 minutes
-                hour: hoursWithMinutes * 30      // 360° / 12 hours
+                second: secondsWithMs * 6,
+                minute: minutesWithSeconds * 6,
+                hour: hoursWithMinutes * 30
             };
 
-            elements.hands.second.style.setProperty('--rotation-angle', `${angles.second}deg`);
-            elements.hands.minute.style.setProperty('--rotation-angle', `${angles.minute}deg`);
-            elements.hands.hour.style.setProperty('--rotation-angle', `${angles.hour}deg`);
+            DOM.hands.second.style.setProperty('--rotation-angle', `${angles.second}deg`);
+            DOM.hands.minute.style.setProperty('--rotation-angle', `${angles.minute}deg`);
+            DOM.hands.hour.style.setProperty('--rotation-angle', `${angles.hour}deg`);
         }
 
-        // Recursive animation loop for glide mode
+        /**
+         * A recursive animation loop for smooth clock hand movement.
+         * It stops when the state's `isGliding` flag is false.
+         */
         function animate() {
             updateClock();
-            if (state.isGliding) {
-                state.animationFrame = requestAnimationFrame(animate);
+            if (STATE.isGliding) {
+                STATE.animationFrame = requestAnimationFrame(animate);
             }
         }
 
         // ============================================
-        // START
+        // UI & DISPLAY LOGIC
         // ============================================
+
+        /**
+         * Central function to update the entire UI based on the current application state.
+         */
+        function updateUI() {
+            // Toggle between Digital and Analog clock displays
+            DOM.digital.style.display = STATE.isDigital ? 'block' : 'none';
+            DOM.analog.style.display = STATE.isDigital ? 'none' : 'block';
+
+            // Update button text content
+            DOM.toggle.textContent = STATE.isDigital ? 'ANALOG' : 'DIGITAL';
+            DOM.format.textContent = STATE.is24Hour ? '12H' : '24H';
+            DOM.mode.textContent = STATE.isGliding ? 'TICK' : 'GLIDE';
+            DOM.numbers.textContent = STATE.showNumbers ? 'MARKERS' : 'NUMBERS';
+
+            // --- Button Visibility ---
+            DOM.topRightButtons.style.display = STATE.buttonsHidden ? 'none' : 'flex';
+
+            if (!STATE.buttonsHidden) {
+                DOM.format.style.display = STATE.isDigital ? 'block' : 'none';
+                DOM.mode.style.display = STATE.isDigital ? 'none' : 'block';
+                DOM.numbers.style.display = STATE.isDigital ? 'none' : 'block';
+            }
+
+            // Toggle number visibility on the analog clock face
+            document.querySelectorAll('.number').forEach(n => {
+                n.classList.toggle('show', STATE.showNumbers)
+            });
+        }
+
+        // ============================================
+        // EVENT HANDLERS & TOGGLES
+        // ============================================
+
+        function toggleClockMode() {
+            STATE.isDigital = !STATE.isDigital;
+            updateUI();
+        }
+
+        function toggleTimeFormat() {
+            STATE.is24Hour = !STATE.is24Hour;
+            updateUI();
+            updateClock(); // Instantly reflect time format change
+        }
+
+        function toggleGlideMode() {
+            STATE.isGliding = !STATE.isGliding;
+            if (STATE.isGliding) {
+                // If switching to glide, clear the one-second interval and start smooth animation.
+                clearInterval(STATE.tickInterval);
+                STATE.tickInterval = null;
+                animate();
+            } else {
+                // If switching to tick, stop the animation and restart the one-second interval.
+                cancelAnimationFrame(STATE.animationFrame);
+                STATE.animationFrame = null;
+                if (!STATE.tickInterval) {
+                    STATE.tickInterval = setInterval(updateClock, 1000);
+                }
+            }
+            updateUI();
+        }
+
+        function toggleNumbers() {
+            STATE.showNumbers = !STATE.showNumbers;
+            updateUI();
+        }
+
+        function toggleButtonVisibility() {
+            STATE.buttonsHidden = !STATE.buttonsHidden;
+            updateUI();
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        /**
+         * Attaches event listeners to all control buttons.
+         */
+        function attachEventListeners() {
+            DOM.toggle.addEventListener('click', toggleClockMode);
+            DOM.format.addEventListener('click', toggleTimeFormat);
+            DOM.mode.addEventListener('click', toggleGlideMode);
+            DOM.numbers.addEventListener('click', toggleNumbers);
+            DOM.hide.addEventListener('click', toggleButtonVisibility);
+        }
+
+        /**
+         * Generates the 60 markers (48 minute, 12 hour) for the analog clock face.
+         */
+        function generateMarkers() {
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < 60; i++) {
+                const marker = document.createElement('div');
+                const isHourMarker = i % 5 === 0;
+                marker.className = `marker ${isHourMarker ? 'hour-marker' : 'minute-marker'}`;
+                marker.style.transform = `rotate(${i * 6}deg)`;
+                fragment.appendChild(marker);
+            }
+            DOM.markers.appendChild(fragment);
+        }
+
+        /**
+         * Generates and positions the 12 numbers on the analog clock face using polar coordinates.
+         */
+        function generateNumbers() {
+            const RADIUS = 150; // Distance of numbers from the center
+            const fragment = document.createDocumentFragment();
+            for (let i = 1; i <= 12; i++) {
+                const num = document.createElement('div');
+                num.className = 'number';
+
+                // Convert hour to angle (in radians) for positioning.
+                // (i * 30) gives the angle in degrees; -90 offsets it to start from the top (12 o'clock).
+                const angle = (i * 30 - 90) * (Math.PI / 180);
+                const x = Math.cos(angle) * RADIUS;
+                const y = Math.sin(angle) * RADIUS;
+
+                num.style.transform = `translate(${x}px, ${y}px)`;
+                num.textContent = i;
+                fragment.appendChild(num);
+            }
+            DOM.clockNumbers.appendChild(fragment);
+        }
+
+        /**
+         * Initializes the clock application.
+         */
+        function init() {
+            generateMarkers();
+            generateNumbers();
+            attachEventListeners();
+            updateUI();
+            updateClock();
+
+            // Start the clock in "tick" mode (updates every second).
+            if (!STATE.tickInterval) {
+                STATE.tickInterval = setInterval(updateClock, 1000);
+            }
+        }
+
+        // Start the application
         init();
     </script>
 </body>
