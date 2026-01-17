@@ -22,8 +22,16 @@
         }
 
         /* === CONTROL BUTTONS === */
-        .btn {
+        .top-right-buttons {
             position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 10px;
+        }
+
+        .btn {
             background: #333;
             color: #fff;
             border: none;
@@ -37,29 +45,16 @@
             background: #555;
         }
 
-        #toggle {
-            top: 20px;
-            right: 20px;
-        }
-
-        #format {
-            top: 20px;
-            right: 145px;
-        }
-
         #mode {
-            top: 20px;
-            right: 145px;
             display: none;
         }
 
         #numbers {
-            top: 20px;
-            right: 270px;
             display: none;
         }
 
         #hideBtn {
+            position: fixed;
             bottom: 20px;
             left: 20px;
             padding: 8px 12px;
@@ -174,10 +169,12 @@
     </style>
 </head>
 <body>
-    <button id="toggle" class="btn">ANALOG</button>
-    <button id="format" class="btn">12H</button>
-    <button id="mode" class="btn">GLIDE</button>
-    <button id="numbers" class="btn">NUMBERS</button>
+    <div class="top-right-buttons">
+        <button id="toggle" class="btn">ANALOG</button>
+        <button id="format" class="btn">12H</button>
+        <button id="mode" class="btn">GLIDE</button>
+        <button id="numbers" class="btn">NUMBERS</button>
+    </div>
     <button id="hideBtn" class="btn">HIDE</button>
     
     <div id="digital">00:00:00</div>
