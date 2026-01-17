@@ -92,13 +92,11 @@
         .hour-marker {
             width: 4px;
             height: 20px;
-            margin-left: -2px;
         }
 
         .minute-marker {
             width: 2px;
             height: 10px;
-            margin-left: -1px;
         }
 
         /* Clock hands */
@@ -236,7 +234,7 @@
             for (let i = 0; i < 60; i++) {
                 const marker = document.createElement('div');
                 marker.className = i % 5 === 0 ? 'marker hour-marker' : 'marker minute-marker';
-                marker.style.transform = `rotate(${i * 6}deg)`;
+                marker.style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
                 elements.markers.appendChild(marker);
             }
         }
